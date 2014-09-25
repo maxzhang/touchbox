@@ -50,13 +50,10 @@ body, div {
 ```
 
 ```javascript
-<script src="../../touchbox.js"></script>
-<script>
 new TouchBox('#touchBoxCt', {
     loop: true,
     animation: 'flow'
 });
-</script>
 ```
 
 ## 配置参数
@@ -101,20 +98,20 @@ new TouchBox('#touchBoxCt', {
 子视图开始切换时回调函数，如果返回值为false，则终止当次切换操作。
 
 回调函数参数：
- \- toIndex     切换到视图索引
- \- active      当前视图索引
+ - toIndex     切换到视图索引
+ - active      当前视图索引
 
 ### onSlide : Function
 
 子视图切换结束时回调函数
 
 回调函数参数：
- \- active      当前视图索引
+ - active      当前视图索引
  
 ### onResize : Function
 
 当TouchBox高宽被重置时调用。
 
 回调函数参数：
- \- width       高度
- \- height      宽度
+ - width       高度
+ - height      宽度
