@@ -315,7 +315,7 @@
                 item.style.height = h + 'px';
             });
             if (this.options.onResize) {
-                this.options.onResize.call(this, w, h);
+                this.options.onResize(w, h);
             }
         },
         
@@ -528,7 +528,7 @@
                     me.slide(fromIndex, toIndex, slideDown, silent);
                 };
             
-            if (toIndex > -1 && toIndex <= last && toIndex != active && this.options.beforeSlide(toIndex) !== false) {
+            if (toIndex > -1 && toIndex <= last && toIndex != active && this.options.beforeSlide(toIndex, active) !== false) {
                 fromIndex = active;
                 slideFn((toIndex < active && active < last) || (toIndex == last - 1 && active == last) || (toIndex == last && active === 0));
             } else {
