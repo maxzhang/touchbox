@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>touchbox demo</title>
+
+<style>
+body, div {
+    margin: 0;
+    padding: 0;
+}
+#touchBoxCt>div{
+    display: none;
+}
+#touchBoxCt>div>img{
+    width: 100%;
+    height: 100%;
+}
+#d1 {
+    background-color: red;
+}
+#d2 {
+    background-color: blue;
+}
+#d3 {
+    background-color: green;
+}
+</style>
+
+</head>
+<body>
+
+<div id="touchBoxCt">
+    <div id="d1"><img src="../images/i1.jpg" alt=""></div>
+    <div id="d2"><img src="../images/i2.jpg" alt=""></div>
+    <div id="d3"><img src="../images/i3.jpg" alt=""></div>
+</div>
+
+
+<script src="../../touchbox.js"></script>
+<script>
+new TouchBox('#touchBoxCt', {
+    loop: true,
+    animation: 'flow'
+});
+</script>
+</body>
+</html>
