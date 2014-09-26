@@ -513,10 +513,11 @@
                 last = me.getLast(),
                 height = me.ct.offsetHeight,
                 fromIndex,
-                context = me.getContext();
-                slideFn = function(slideDown) {
+                context = me.getContext(),
+                isSlideDown,
+                slideFn = function(isSlideDown) {
                     if (!isTouch) {
-                        if (slideDown) {
+                        if (isSlideDown) {
                             me.setItemShow('prev', toIndex, -height, context);
                         } else {
                             me.setItemShow('next', toIndex, height, context);
@@ -525,22 +526,27 @@
                             me.setItemShow('active', fromIndex, 0, context);
                         }
                     }
-                    me.slide(fromIndex, toIndex, slideDown, silent);
+                    me.slide(fromIndex, toIndex, isSlideDown, silent);
                 };
             
             if (toIndex > -1 && toIndex <= last && toIndex != active && this.options.beforeSlide(toIndex, active) !== false) {
                 fromIndex = active;
-                slideFn((toIndex < active && active < last) || (toIndex == last - 1 && active == last) || (toIndex == last && active === 0));
+                isSlideDown = (toIndex < active && active < last) || (toIndex == last - 1 && active == last) || (toIndex == last && active === 0);
+                slideFn(isSlideDown);
             } else {
-                var translateY = getTranslateY(me.getItem(active));
-                var slideDown = translateY > 0;
-                fromIndex = slideDown ? context.prev : context.next;
+                if (getTranslateY(me.getItem(active)) > 0) {
+                    fromIndex = context.prev;
+                    isSlideDown = false;
+                } else {
+                    fromIndex = context.next;
+                    isSlideDown = true;
+                }
                 toIndex = active;
-                slideFn(slideDown);
+                slideFn(isSlideDown);
             }
         },
         
-        slide: function(fromIndex, toIndex, slideDown, silent) {
+        slide: function(fromIndex, toIndex, isSlideDown, silent) {
             var me = this,
                 offsetHeight = me.ct.offsetHeight,
                 fromEl,
@@ -581,7 +587,7 @@
             }
             toEl = me.getItem(toIndex);
             translateY = getTranslateY(toEl);
-            duration = silent ? 0 : animation.duration ? animation.duration.call(me, fromEl, toEl, slideDown) : Math.round((Math.abs(translateY) / offsetHeight) * baseDuration);
+            duration = silent ? 0 : animation.duration ? animation.duration.call(me, fromEl, toEl, fromIndex, toIndex, isSlideDown) : Math.round((Math.abs(translateY) / offsetHeight) * baseDuration);
             
             if (fromEl) {
                 clearHandler(fromEl, fromSlideHandler);
@@ -597,9 +603,9 @@
                 }
                 
                 if (fromEl) {
-                    animation.touchEnd.call(me, 'active', fromIndex, translateY > 0 ? -offsetHeight : offsetHeight, slideDown);
+                    animation.touchEnd.call(me, 'active', fromIndex, translateY > 0 ? -offsetHeight : offsetHeight, isSlideDown);
                 }
-                animation.touchEnd.call(me, translateY > 0 ? 'next' : 'prev', toIndex, 0, slideDown);
+                animation.touchEnd.call(me, translateY > 0 ? 'next' : 'prev', toIndex, 0, isSlideDown);
                 
                 if (silent) {
                     fromSlideHandler();
@@ -719,15 +725,15 @@
                     el.style[vendor.transform] = 'translate3d(0px,' + y + 'px,0px)';
                 }
             },
-            touchEnd: function(type, index, y, slideDown) {
+            touchEnd: function(type, index, y, isSlideDown) {
                 var el = this.getItem(index);
-                if (!slideDown && type === 'active' && y < 0) {
+                if (!isSlideDown && type === 'active' && y < 0) {
                     el.style[vendor.transform] = 'translate3d(0px,' + (y / 4) + 'px,0px)';
                 } else {
                     el.style[vendor.transform] = 'translate3d(0px,' + y + 'px,0px)';
                 }
             },
-            duration: function(fromEl, toEl, slideDown) {
+            duration: function(fromEl, toEl, fromIndex, toIndex, isSlideDown) {
                 var offsetHeight = this.ct.offsetHeight;
                 var toY = getTranslateY(toEl);
                 var fromY = 0;
@@ -735,7 +741,7 @@
                 if (fromEl) {
                     fromY = getTranslateY(fromEl);
                 }
-                if (toY < 0) {
+                if (toY < 0 && (this.options.loop || toIndex !== this.getLast())) {
                     y = offsetHeight - Math.abs(fromY);
                 } else {
                     y = Math.abs(toY);
