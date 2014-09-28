@@ -1,5 +1,7 @@
 /*!
  * TouchBox
+ * 
+ * @homepage https://github.com/maxzhang/touchbox
  * @author maxzhang<zhangdaiping@gmail.com> http://maxzhang.github.io
  */
 (function(window) {
