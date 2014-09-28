@@ -115,7 +115,7 @@
     var vendor = (function() {
         var dummyStyle = document.createElement('div').style,
             propPrefix = (function() {
-                var vendors = 't,webkitT,MozT,msT,OT'.split(','),
+                var vendors = 'webkitT,MozT,msT,OT,t'.split(','),
                     t,
                     i = 0,
                     l = vendors.length;
@@ -242,15 +242,15 @@
             options = ct;
             ct = null;
         }
+        if (ct) {
+            ct = isString(ct) ? document.querySelector(ct) : ct;
+        } else {
+            ct = document.body;
+        }
+        ct.style.overflow = 'hidden';
+        this.ct = ct;
         
         this.options = extend(defaultOptions, options);
-        
-        if (ct) {
-            this.ct = isString(ct) ? document.querySelector(ct) : ct;
-        } else {
-            this.ct = document.body;
-        }
-        this.ct.style.overflow = 'hidden';
         
         this.initEvents();
         this.onOrientationChange();
