@@ -584,7 +584,7 @@
                 me.lastActive = me.active;
                 me.active = toIndex;
                 me.sliding = false;
-                me.options.onSlide.call(me.options.scope, toIndex);
+                me.options.onSlide.call(me.options.scope, toIndex, me.lastActive);
             };
 
             if (fromIndex > -1) {
