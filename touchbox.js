@@ -501,9 +501,16 @@
                 } else {
                     transIndex = context.active;
                 }
-
-                me.setItemHide(me.touchCoords.startY > me.touchCoords.stopY ? context.prev : context.next, -height);
-                me.to(transIndex, false, true);
+                
+                
+                
+                if (transIndex == context.active && getTranslateY(me.getItem(transIndex)) === 0) {
+                    me.setItemHide(context.prev, -height);
+                    me.setItemHide(context.next, -height);
+                } else {
+                    me.setItemHide(me.touchCoords.startY > me.touchCoords.stopY ? context.prev : context.next, -height);
+                    me.to(transIndex, false, true);
+                }
                 delete me.touchCoords;
             }
         },
