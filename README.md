@@ -115,3 +115,7 @@ new TouchBox('#touchBoxCt', {
 回调函数参数：
  - width       高度
  - height      宽度
+
+### scope: Object
+
+回调函数的作用域
