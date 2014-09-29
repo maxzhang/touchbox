@@ -235,7 +235,8 @@
             rotateBody: '',
             beforeSlide: noop,
             onSlide: noop,
-            onResize: noop
+            onResize: noop,
+            scope: this
         };
         
         if (ct && !options) {
@@ -317,7 +318,7 @@
                 item.style.height = h + 'px';
             });
             if (this.options.onResize) {
-                this.options.onResize(w, h);
+                this.options.onResize.call(this.options.scope, w, h);
             }
         },
         
@@ -462,7 +463,9 @@
                 if (context.prev > -1) {
                     animation.touchMove.call(me, 'prev', context.prev, -height - offsetY, context);
                 }
-                animation.touchMove.call(me, 'active', context.active, -offsetY, context);
+                if (me.options.loop || (offsetY < 0 && context.prev > -1) || (offsetY > 0 && context.next > -1)) {
+                    animation.touchMove.call(me, 'active', context.active, -offsetY, context);
+                }
                 if (context.next > -1) {
                     animation.touchMove.call(me, 'next', context.next, height - offsetY, context);
                 }
@@ -531,7 +534,7 @@
                     me.slide(fromIndex, toIndex, isSlideDown, silent);
                 };
             
-            if (toIndex > -1 && toIndex <= last && toIndex != active && this.options.beforeSlide(toIndex, active) !== false) {
+            if (toIndex > -1 && toIndex <= last && toIndex != active && this.options.beforeSlide.call(this.options.scope, toIndex, active) !== false) {
                 fromIndex = active;
                 isSlideDown = (toIndex < active && active < last) || (toIndex == last - 1 && active == last) || (toIndex == last && active === 0);
                 slideFn(isSlideDown);
@@ -581,7 +584,7 @@
                 me.lastActive = me.active;
                 me.active = toIndex;
                 me.sliding = false;
-                me.options.onSlide(toIndex);
+                me.options.onSlide.call(me.options.scope, toIndex);
             };
 
             if (fromIndex > -1) {
