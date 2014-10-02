@@ -3,9 +3,10 @@ TouchBox
 > 移动端单页视图库，适用于制作移动专题
 
 ## 兄弟项目 TouchStyle
-> 移动专题框架，快速搭建酷炫的移动专题
+> 快速搭建酷炫的移动专题
 
-https://github.com/maxzhang/touchstyle
+项目地址：https://github.com/maxzhang/touchstyle
+
 
 ## DEMO
 
