@@ -444,7 +444,7 @@
             if (isUndefined(me.vertical)) {
                 if (offsetY !== 0) {
                     e.preventDefault();
-	                e.stopPropagation();
+                    e.stopPropagation();
                 }
             } else {
                 if (absY > absX) {
