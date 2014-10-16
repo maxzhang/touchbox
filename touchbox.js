@@ -11,11 +11,6 @@
     var document = window.document,
         userAgent = window.navigator.userAgent.toLowerCase(),
         msPointerEnabled = window.navigator.msPointerEnabled,
-        TOUCH_EVENTS = {
-            start: msPointerEnabled ? 'MSPointerDown' : 'touchstart',
-            move: msPointerEnabled ? 'MSPointerMove' : 'touchmove',
-            end: msPointerEnabled ? 'MSPointerUp' : 'touchend'
-        },
         toString = Object.prototype.toString,
         slice = Array.prototype.slice,
         enumerables = ['hasOwnProperty', 'valueOf', 'isPrototypeOf', 'propertyIsEnumerable', 'toLocaleString', 'toString', 'constructor'];
@@ -115,7 +110,7 @@
     var vendor = (function() {
         var dummyStyle = document.createElement('div').style,
             propPrefix = (function() {
-                var vendors = 'webkitT,MozT,msT,OT,t'.split(','),
+                var vendors = 'webkitT,t,msT,MozT,OT'.split(','),
                     t,
                     i = 0,
                     l = vendors.length;
@@ -147,7 +142,12 @@
                     return propPrefix.toLowerCase() + 'TransitionEnd';
                 }
                 return 'transitionend';
-            }());
+            }()),
+            animation = prefixStyle('animation'),
+            animationName = prefixStyle('animationName'),
+            animationDuration = prefixStyle('animationDuration'),
+            animationTimingFunction = prefixStyle('animationTimingFunction'),
+            animationDelay = prefixStyle('animationDelay');
 
         dummyStyle = null;
 
@@ -161,7 +161,22 @@
             transformOrigin: transformOrigin,
             transitionTimingFunction: transitionTimingFunction,
             transitionDelay: transitionDelay,
-            transitionEndEvent: transitionEndEvent
+            transitionEndEvent: transitionEndEvent,
+            animation: animation,
+            animationName: animationName,
+            animationDuration: animationDuration,
+            animationTimingFunction: animationTimingFunction,
+            animationDelay: animationDelay
+        };
+    }());
+    
+    var TOUCH_EVENTS = (function() {
+        var pointerPrefix = vendor.propPrefix === 't' ? 'pointer' : (vendor.propPrefix.substring(0, vendor.propPrefix.length - 1) + 'Pointer');
+        return {
+            start: isSmartPhone ? (msPointerEnabled ? pointerPrefix + 'Down' : 'touchstart') : 'mousedown',
+            move: isSmartPhone ? (msPointerEnabled ? pointerPrefix + 'Move' : 'touchmove') : 'mousemove',
+            end: isSmartPhone ? (msPointerEnabled ? pointerPrefix + 'Up' : 'touchend') : 'mouseup',
+            cancel: isSmartPhone ? (msPointerEnabled ? pointerPrefix + 'Cancel' : 'touchcancel') : 'mousecancel'
         };
     }());
     
@@ -177,30 +192,16 @@
     }
     
     function isPortrait() {
-        if (isSmartPhone) {
-            return window.innerHeight > window.innerWidth;
-        } else {
-            return true;
-        }
+        return window.innerHeight > window.innerWidth;
     }
     
     function proxyOrientationChange(fn, scope) {
-        function handleOrientationChange(args) {
+        return function(e) {
+            var args = slice.call(arguments, 0);
             var wasPortrait = isPortrait();
             if (fn.lastOrientation !== wasPortrait) {
                 fn.lastOrientation = wasPortrait;
                 fn.apply(scope || window, args);
-            }
-        }
-        return function(e) {
-            var args = slice.call(arguments, 0);
-            if (e.type !== 'resize' && os.android) {
-                clearTimeout(fn.orientationChangeTimer);
-                fn.orientationChangeTimer = setTimeout(function() {
-                    handleOrientationChange(args);
-                }, 300);
-            } else {
-                handleOrientationChange(args);
             }
         };
     }
@@ -245,6 +246,7 @@
         }
         if (ct) {
             ct = isString(ct) ? document.querySelector(ct) : ct;
+            ct.parentNode.style.overflow = 'hidden';
         } else {
             ct = document.body;
         }
@@ -394,17 +396,19 @@
             var me = this;
             if (me.sliding) {
                 e.preventDefault();
+                e.stopPropagation();
                 return;
             }
-
+            
             me.ct.removeEventListener(TOUCH_EVENTS.move, me, false);
             me.ct.removeEventListener(TOUCH_EVENTS.end, me, false);
+            me.ct.removeEventListener(TOUCH_EVENTS.cancel, me, false);
             me.ct.addEventListener(TOUCH_EVENTS.move, me, false);
             me.ct.addEventListener(TOUCH_EVENTS.end, me, false);
+            me.ct.addEventListener(TOUCH_EVENTS.cancel, me, false);
             delete me.vertical;
-
-            var clientX = msPointerEnabled ? e.clientX : e.touches[0].clientX,
-                clientY = msPointerEnabled ? e.clientY : e.touches[0].clientY,
+            
+            var point = e.touches ? e.touches[0] : e,
                 context = me.getContext(),
                 height = me.ct.offsetHeight;
 
@@ -417,20 +421,20 @@
             me.setItemShow('active', context.active, 0, context);
 
             me.touchCoords = {};
-            me.touchCoords.startX = clientX;
-            me.touchCoords.startY = clientY;
+            me.touchCoords.startX = point.pageX;
+            me.touchCoords.startY = point.pageY;
             me.touchCoords.timeStamp = e.timeStamp;
         },
         
         onTouchMove: function(e) {
             var me = this;
-            
             if (!me.touchCoords || me.sliding) {
                 return;
             }
-
-            me.touchCoords.stopX = msPointerEnabled ? e.clientX : e.touches[0].clientX;
-            me.touchCoords.stopY = msPointerEnabled ? e.clientY : e.touches[0].clientY;
+            
+            var point = e.touches ? e.touches[0] : e;
+            me.touchCoords.stopX = point.pageX;
+            me.touchCoords.stopY = point.pageY;
 
             var offsetX = me.touchCoords.startX - me.touchCoords.stopX,
                 offsetY = me.touchCoords.startY - me.touchCoords.stopY,
@@ -440,12 +444,14 @@
             if (isUndefined(me.vertical)) {
                 if (offsetY !== 0) {
                     e.preventDefault();
+	                e.stopPropagation();
                 }
             } else {
                 if (absY > absX) {
                     me.vertical = true;
                     if (offsetY !== 0) {
                         e.preventDefault();
+                        e.stopPropagation();
                     }
                 } else {
                     me.vertical = false;
@@ -476,7 +482,8 @@
             var me = this;
             me.ct.removeEventListener(TOUCH_EVENTS.move, me, false);
             me.ct.removeEventListener(TOUCH_EVENTS.end, me, false);
-
+            me.ct.removeEventListener(TOUCH_EVENTS.cancel, me, false);
+            
             if (!me.touchCoords || me.sliding) {
                 return;
             }
@@ -643,6 +650,9 @@
                 case TOUCH_EVENTS.end:
                     this.onTouchEnd(e);
                     break;
+                case TOUCH_EVENTS.cancel:
+                    this.onTouchEnd(e);
+                    break;
                 case 'resize':
                     this.onResize(e);
                     break;
@@ -655,6 +665,7 @@
                 this.ct.removeEventListener(TOUCH_EVENTS.start, this, false);
                 this.ct.removeEventListener(TOUCH_EVENTS.move, this, false);
                 this.ct.removeEventListener(TOUCH_EVENTS.end, this, false);
+                this.ct.removeEventListener(TOUCH_EVENTS.cancel, this, false);
                 window.removeEventListener('orientationchange', this.onOrientationChangeProxy, false);
                 window.removeEventListener('resize', this.onOrientationChangeProxy, false);
                 window.removeEventListener('resize', this, false);

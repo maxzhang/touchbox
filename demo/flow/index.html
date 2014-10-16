@@ -13,6 +13,9 @@ body, div {
 }
 #touchBoxCt>div{
     display: none;
+    -webkit-user-select: none;   /* 禁止选中文本（如无文本选中需求，此为必选项） */
+    -ms-user-select: none;
+    user-select: none;
 }
 #touchBoxCt>div>img{
     width: 100%;
