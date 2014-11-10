@@ -1,5 +1,5 @@
 /*!
- * TouchBox - v1.0.1
+ * TouchBox - v1.0.3
  * 
  * @homepage https://github.com/maxzhang/touchbox
  * @author maxzhang<zhangdaiping@gmail.com> http://maxzhang.github.io
@@ -10,7 +10,8 @@
     
     var document = window.document,
         userAgent = window.navigator.userAgent.toLowerCase(),
-        msPointerEnabled = window.navigator.msPointerEnabled,
+        hasTouch = 'ontouchstart' in window,
+        hasPointer = window.PointerEvent || window.MSPointerEvent, // IE10 is prefixed
         toString = Object.prototype.toString,
         slice = Array.prototype.slice,
         enumerables = ['hasOwnProperty', 'valueOf', 'isPrototypeOf', 'propertyIsEnumerable', 'toLocaleString', 'toString', 'constructor'];
@@ -50,6 +51,22 @@
     };
     
     var isSmartPhone = os.wp || os.ios || os.android;
+    
+    function prefixPointerEvent(pointerEvent) {
+        return window.MSPointerEvent ? 
+            'MSPointer' + pointerEvent.charAt(9).toUpperCase() + pointerEvent.substr(10):
+            pointerEvent;
+    }
+    
+    var TOUCH_EVENTS = (function() {
+        return {
+            start: hasTouch ? 'touchstart' : (hasPointer ? prefixPointerEvent('pointerdown') : 'mousedown'),
+            move: hasTouch ? 'touchmove' : (hasPointer ? prefixPointerEvent('pointermove') : 'mousemove'),
+            end: hasTouch ? 'touchend' : (hasPointer ? prefixPointerEvent('pointerup') : 'mouseup'),
+            cancel: hasTouch ? 'touchcancel' : (hasPointer ? prefixPointerEvent('pointercancel') : 'mousecancel'),
+        };
+    }());
+    
     
     function isFunction(it) {
         return toString.call(it) === '[object Function]';
@@ -170,16 +187,6 @@
         };
     }());
     
-    var TOUCH_EVENTS = (function() {
-        var pointerPrefix = vendor.propPrefix === 't' ? 'pointer' : (vendor.propPrefix.substring(0, vendor.propPrefix.length - 1) + 'Pointer');
-        return {
-            start: isSmartPhone ? (msPointerEnabled ? pointerPrefix + 'Down' : 'touchstart') : 'mousedown',
-            move: isSmartPhone ? (msPointerEnabled ? pointerPrefix + 'Move' : 'touchmove') : 'mousemove',
-            end: isSmartPhone ? (msPointerEnabled ? pointerPrefix + 'Up' : 'touchend') : 'mouseup',
-            cancel: isSmartPhone ? (msPointerEnabled ? pointerPrefix + 'Cancel' : 'touchcancel') : 'mousecancel'
-        };
-    }());
-    
     function getTranslateY(el) {
         var transform = window.getComputedStyle(el)[vendor.transform],
             values;
@@ -231,7 +238,7 @@
             active: 0,
             loop: false,
             animation: 'flow',
-            duration: 350,
+            duration: 400,
             lockScreen: 'off', // 横竖屏锁定，取值范围：'off'、'landscape'、'portrait'
             rotateBody: '',
             beforeSlide: noop,
@@ -648,8 +655,6 @@
                     this.onTouchMove(e);
                     break;
                 case TOUCH_EVENTS.end:
-                    this.onTouchEnd(e);
-                    break;
                 case TOUCH_EVENTS.cancel:
                     this.onTouchEnd(e);
                     break;
