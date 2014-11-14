@@ -1,5 +1,5 @@
 /*!
- * TouchBox - v1.0.3
+ * TouchBox - v1.0.4
  * 
  * @homepage https://github.com/maxzhang/touchbox
  * @author maxzhang<zhangdaiping@gmail.com> http://maxzhang.github.io
@@ -557,7 +557,7 @@
             
             if (toIndex > -1 && toIndex <= last && toIndex != active && this.options.beforeSlide.call(this.options.scope, toIndex, active) !== false) {
                 fromIndex = active;
-                isSlideDown = (toIndex < active && active < last) || (toIndex == last - 1 && active == last) || (toIndex == last && active === 0);
+                isSlideDown = last > 1 ? ((toIndex < active && active < last) || (toIndex == last - 1 && active == last) || (toIndex == last && active === 0)) : active > toIndex;
                 slideFn(isSlideDown);
             } else {
                 if (getTranslateY(me.getItem(active)) > 0) {
