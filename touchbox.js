@@ -287,6 +287,10 @@
             return this.getItems()[index];
         },
         
+        getActive: function() {
+            return this.getItems()[this.active];
+        },
+        
         getLength: function() {
             return this.getItems().length;
         },
