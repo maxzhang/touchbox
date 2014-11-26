@@ -229,6 +229,55 @@
         target.transitionTimer = setTimeout(handler, duration + 50);
     }
     
+    var EventEmitter = function() {
+        this.events = {};
+    };
+    EventEmitter.prototype = {
+        addListener: function(eventName, callback) {
+            if (typeof eventName === 'string') {
+                this.events[eventName] = this.events[eventName] || [];
+                if (callback) {
+                    this.events[eventName].push(callback);
+                }
+            } else {
+                for (var o in eventName) {
+                    this.addListener(o, eventName[o]);
+                }
+            }
+        },
+        removeListener: function(eventName, callback) {
+            if (typeof eventName === 'string') {
+                if (this.events[eventName]) {
+                    for (var i = 0, len = this.events[eventName].length; i < len; i++) {
+                        if (!callback || this.events[eventName][i] === callback) {
+                            this.events[eventName].splice(i, 1);
+                            return;
+                        }
+                    }
+                }
+            } else {
+                for (var o in eventName) {
+                    this.removeListener(o, eventName[o]);
+                }
+            }
+        },
+        fireEvent: function(eventName, scope, args) {
+            if (arguments.length == 2) {
+                args = scope;
+                scope = null;
+            }
+            if (this.events[eventName]) {
+                for (var i = 0, len = this.events[eventName].length; i < len; i++) {
+                    var eventCb = this.events[eventName][i];
+                    if (eventCb && eventCb.apply(scope, args || []) === false) {
+                        return false;
+                    }
+                }
+            }
+        }
+    };
+    
+    
     /*--------------- 公共方法 end ---------------*/
     
     
@@ -241,9 +290,9 @@
             duration: 400,
             lockScreen: 'off', // 横竖屏锁定，取值范围：'off'、'landscape'、'portrait'
             rotateBody: '',
-            beforeSlide: noop,
-            onSlide: noop,
-            onResize: noop,
+            beforeSlide: null,
+            onSlide: null,
+            onResize: null,
             scope: this
         };
         
@@ -276,6 +325,25 @@
             window.addEventListener('orientationchange', this.onOrientationChangeProxy, false);
             window.addEventListener('resize', this.onOrientationChangeProxy, false);
             window.addEventListener('resize', this, false);
+            
+            this.ee = new EventEmitter();
+            if (this.options.beforeSlide) {
+                this.ee.addListener('beforeslide', this.options.beforeSlide);
+            }
+            if (this.options.onSlide) {
+                this.ee.addListener('slide', this.options.onSlide);
+            }
+            if (this.options.onResize) {
+                this.ee.addListener('resize', this.options.onResize);
+            }
+        },
+        
+        on: function() {
+            this.ee.addListener.apply(this.ee, arguments);
+        },
+        
+        off: function(eventName, callback) {
+            this.ee.removeListener.apply(this.ee, arguments);
         },
         
         getItems: function() {
@@ -330,9 +398,7 @@
                 item.style.width = w + 'px';
                 item.style.height = h + 'px';
             });
-            if (this.options.onResize) {
-                this.options.onResize.call(this.options.scope, w, h);
-            }
+            this.ee.fireEvent('resize', this.options.scope, [w, h]);
         },
         
         onResize: function(e) {
@@ -559,7 +625,7 @@
                     me.slide(fromIndex, toIndex, isSlideDown, silent);
                 };
             
-            if (toIndex > -1 && toIndex <= last && toIndex != active && this.options.beforeSlide.call(this.options.scope, toIndex, active) !== false) {
+            if (toIndex > -1 && toIndex <= last && toIndex != active && me.ee.fireEvent('beforeslide', this.options.scope, [toIndex, active]) !== false) {
                 fromIndex = active;
                 isSlideDown = last > 1 ? ((toIndex < active && active < last) || (toIndex == last - 1 && active == last) || (toIndex == last && active === 0)) : active > toIndex;
                 slideFn(isSlideDown);
@@ -609,7 +675,7 @@
                 me.lastActive = me.active;
                 me.active = toIndex;
                 me.sliding = false;
-                me.options.onSlide.call(me.options.scope, toIndex, me.lastActive);
+                me.ee.fireEvent('slide', me.options.scope, [toIndex, me.lastActive]);
             };
 
             if (fromIndex > -1) {

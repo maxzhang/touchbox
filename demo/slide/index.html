@@ -41,9 +41,16 @@ body, div {
 
 <script src="../../touchbox.js"></script>
 <script>
-new TouchBox('#touchBoxCt', {
+var boxer = new TouchBox('#touchBoxCt', {
     loop: false,
     animation: 'slide'
+});
+boxer.on('beforeslide', function(toIndex) {
+    console.log('beforeslide');
+    //return toIndex !== 2;
+});
+boxer.on('slide', function() {
+    console.log('slide');
 });
 </script>
 </body>
