@@ -1,5 +1,5 @@
 /*!
- * TouchBox - v1.0.4
+ * TouchBox - v1.0.5
  * 
  * @homepage https://github.com/maxzhang/touchbox
  * @author maxzhang<zhangdaiping@gmail.com> http://maxzhang.github.io
@@ -648,6 +648,24 @@
                     }, duration + 400);
                 }
             }, os.android ? 50 : 10);
+        },
+        
+        prev: function() {
+            var context = this.getContext();
+            if (context.prev > -1) {
+                this.to(context.prev);
+                return true;
+            }
+            return false;
+        },
+        
+        next: function() {
+            var context = this.getContext();
+            if (context.next > -1) {
+                this.to(context.next);
+                return true;
+            }
+            return false;
         },
 
         handleEvent: function(e) {
