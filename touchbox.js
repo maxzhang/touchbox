@@ -664,15 +664,6 @@
                 return;
             }
             
-            /* 
-             * 在移动设备上，当滚动条处于页面顶部时，页面依然可以继续向下滑，
-             * 如果快速连续的重复向下滑动动作，容易导致浏览器默认向下滑动动作与TouchBox向下滑动冲突，
-             * 向上滑动类似，
-             * 
-             * 所以，不伦任何手势都阻止浏览器默认动作(preventDefault)
-             */
-            e.preventDefault();
-            
             var point = e.touches ? e.touches[0] : e,
                 context = me.getContext(),
                 height = me.ct.offsetHeight;
@@ -714,6 +705,16 @@
                     }
                 }
             } else {
+                if (offsetY !== 0) {
+                    /* 
+                     * 在移动设备上，当滚动条处于页面顶部时，页面依然可以继续向下滑，
+                     * 如果快速连续的重复向下滑动动作，容易导致浏览器默认向下滑动动作与TouchBox向下滑动冲突，
+                     * 向上滑动类似，
+                     * 
+                     * 所以，不伦任何手势都阻止浏览器默认动作(preventDefault)
+                     */
+                     e.preventDefault();
+                }
                 if (absY > absX) {
                     me.vertical = true;
                     if (offsetY !== 0) {
