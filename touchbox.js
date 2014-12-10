@@ -1,5 +1,5 @@
 /*!
- * TouchBox - v1.0.5
+ * TouchBox - v1.0.6
  * 
  * @homepage https://github.com/maxzhang/touchbox
  * @author maxzhang<zhangdaiping@gmail.com> http://maxzhang.github.io
@@ -49,8 +49,6 @@
             return /\bandroid/;
         }()).test(userAgent)
     };
-    
-    var isSmartPhone = os.wp || os.ios || os.android;
     
     function prefixPointerEvent(pointerEvent) {
         return window.MSPointerEvent ? 
@@ -229,53 +227,230 @@
         target.transitionTimer = setTimeout(handler, duration + 50);
     }
     
-    var EventEmitter = function() {
-        this.events = {};
-    };
-    EventEmitter.prototype = {
-        addListener: function(eventName, callback) {
-            if (typeof eventName === 'string') {
-                this.events[eventName] = this.events[eventName] || [];
-                if (callback) {
-                    this.events[eventName].push(callback);
-                }
-            } else {
-                for (var o in eventName) {
-                    this.addListener(o, eventName[o]);
-                }
+    
+    var EventEmitter = (function() {
+        var toString = Object.prototype.toString,
+            eventPropRe = /^(?:scope|delay|buffer|single|stopEvent|preventDefault|stopPropagation|normalized|args|delegate)$/;
+        
+        function isString(o) {
+            return typeof o === 'string';
+        }
+        
+        function isFunction(o) {
+            return toString.call(o) === '[object Function]';
+        }
+        
+        function isArray(o) {
+            return toString.call(o) === '[object Array]';
+        }
+        
+        function createSingle(e, en, fn, scope){
+            return function(){
+                e.removeListener(en, fn, scope);
+                return fn.apply(scope, arguments);
+            };
+        }
+        
+        /**
+         * @class EventEmitter
+         *
+         * 事件类，使用方法如下：
+         * 
+         * <code>
+         *  // 实例化一个事件类
+         *  var ee = new EventEmitter();
+         *  
+         *  // 添加事件类型
+         *  ee.addEvents('event1');
+         *  
+         *  // 添加事件监听
+         *  ee.addListener('event1', function() {
+         *      // 监听回调函数
+         *  });
+         *
+         *  // 执行事件，调用事件监听回调函数
+         *  ee.fireEvent('event1');
+         * </code>
+         */
+        var EventEmitter = function(listeners, defaultScope) {
+            this.events = {};
+            this.defaultScope = defaultScope || window;
+            
+            if (listeners) {
+                this.addListener(listeners);
             }
-        },
-        removeListener: function(eventName, callback) {
-            if (typeof eventName === 'string') {
-                if (this.events[eventName]) {
-                    for (var i = 0, len = this.events[eventName].length; i < len; i++) {
-                        if (!callback || this.events[eventName][i] === callback) {
-                            this.events[eventName].splice(i, 1);
+        };
+        
+        EventEmitter.prototype = {
+            constructor: EventEmitter,
+            
+            /**
+             * 声明事件类型，调用方式如下：
+             * 
+             * <code>
+             *  ee.addEvents('event1', 'event2');
+             *  
+             *  // 或
+             *  
+             *  ee.addEvents({
+             *      'event1': true,
+             *      'event2': true
+             *  });
+             * </code>
+             * 
+             * @param {String} eventName 事件名称
+             * @param {String...} eventName1...n (optional)
+             */
+            addEvents: function(o) {
+                var args,
+                    i,
+                    events = this.events;
+        
+                if (isString(o)) {
+                    args = arguments;
+                    i = args.length;
+        
+                    while (i--) {
+                        events[args[i]] = events[args[i]] || [];
+                    }
+                } else {
+                    for (i in o) {
+                        events[i] = events[i] || [];
+                    }
+                }
+            },
+            
+            /**
+             * 增加事件监听
+             * @param {String} eventName 事件名称
+             * @param {String} fireFn 事件监听回调函数
+             * @param {String} scope (optional) 回调函数作用域
+             * @param {Object} options (optional) 事件监听选项
+             *  可选的选项参数包括：
+             *      Boolean : single true表示只执行一次
+             */
+            addListener: function(eventName, fireFn, scope, options) {
+                if (!isString(eventName)) {
+                    var listener, eName;
+                    scope = eventName.scope;
+                    for (eName in eventName) {
+                        if (eventPropRe.test(eName)) {
+                            continue;
+                        }
+                        listener = eventName[eName];
+                        if (isFunction(listener)) {
+                            this.addListener(eName, listener, scope);
+                        } else {
+                            this.addListener(eName, listener.fn, listener.scope || scope);
+                        }
+                    }
+                    return;
+                }
+                
+                var events = this.events;
+                eventName = eventName.toLowerCase();
+                events[eventName] = events[eventName] || [];
+                scope = scope || this.defaultScope;
+                options = options || {};
+                
+                events[eventName].push({
+                    single: options.single,
+                    fireFn: fireFn,
+                    listenerFn: this.createListener(eventName, fireFn, scope, options),
+                    scope: scope
+                });
+            },
+            
+            /**
+             * 移除事件监听
+             * @param {String} eventName 事件名称
+             * @param {String} fireFn 事件监听回调函数
+             * @param {String} scope 回调函数作用域
+             */
+            removeListener: function(eventName, fireFn, scope) {
+                eventName = eventName.toLowerCase();
+                var listeners = this.events[eventName];
+                if (isArray(listeners)) {
+                    scope = scope || this.defaultScope;
+                    for (var i = 0, len = listeners.length; i < len; i++) {
+                        if (listeners[i].fireFn == fireFn && scope == listeners[i].scope) {
+                            listeners.splice(i, 1);
                             return;
                         }
                     }
                 }
-            } else {
-                for (var o in eventName) {
-                    this.removeListener(o, eventName[o]);
+            },
+            
+            /**
+             * 清空某一个事件的所有监听
+             * @param {String} eventName 事件名称
+             */
+            clearListeners: function(eventName) {
+                this.events[eventName.toLowerCase()] = [];
+            },
+            
+            /**
+             * 清空所有事件的监听
+             */
+            purgeListeners: function() {
+                for (var eventName in this.events) {
+                    this.clearListeners(eventName);
                 }
-            }
-        },
-        fireEvent: function(eventName, scope, args) {
-            if (arguments.length == 2) {
-                args = scope;
-                scope = null;
-            }
-            if (this.events[eventName]) {
-                for (var i = 0, len = this.events[eventName].length; i < len; i++) {
-                    var eventCb = this.events[eventName][i];
-                    if (eventCb && eventCb.apply(scope, args || []) === false) {
-                        return false;
+            },
+            
+            /**
+             * 校验一个事件是否含有监听函数，返回true则表示此事件有监听
+             * @param {String} eventName 事件名称
+             * @return {Booolean} 
+             */
+            hasListener: function(eventName) {
+                var listeners = this.events[eventName.toLowerCase()];
+                return isArray(listeners) && listeners.length > 0;
+            },
+            
+            /**
+             * 执行事件，调用事件监听回调函数
+             * @param {String} eventName 事件名称
+             */
+            fireEvent: function(eventName) {
+                var listeners = this.events[eventName.toLowerCase()];
+                if (isArray(listeners)) {
+                    var args = Array.prototype.slice.call(arguments, 1),
+                        len = listeners.length,
+                        i = 0,
+                        l;
+                    if (len > 0) {
+                        for (; i < len; i++) {
+                            l = listeners[i];
+                            if (l) {
+                                if (l.single === true) {
+                                    i--;
+                                }
+                                if (l.listenerFn.apply(l.scope, args) === false) {
+                                    return false;
+                                }
+                            }
+                        }
                     }
                 }
+            },
+            
+            // private
+            createListener: function(eventName, fireFn, scope, options) {
+                var h = fireFn;
+                options = options || {};
+                if (options.single) {
+                    h = createSingle(this, eventName, fireFn, scope);
+                }
+                return h;
             }
-        }
-    };
+        };
+        
+        EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+        EventEmitter.prototype.off = EventEmitter.prototype.removeListener;
+        
+        return EventEmitter;
+    }());
     
     
     /*--------------- 公共方法 end ---------------*/
@@ -326,24 +501,24 @@
             window.addEventListener('resize', this.onOrientationChangeProxy, false);
             window.addEventListener('resize', this, false);
             
-            this.ee = new EventEmitter();
+            this.ee = new EventEmitter(null, this.options.scope);
             if (this.options.beforeSlide) {
-                this.ee.addListener('beforeslide', this.options.beforeSlide);
+                this.ee.on('beforeslide', this.options.beforeSlide);
             }
             if (this.options.onSlide) {
-                this.ee.addListener('slide', this.options.onSlide);
+                this.ee.on('slide', this.options.onSlide);
             }
             if (this.options.onResize) {
-                this.ee.addListener('resize', this.options.onResize);
+                this.ee.on('resize', this.options.onResize);
             }
         },
         
         on: function() {
-            this.ee.addListener.apply(this.ee, arguments);
+            this.ee.on.apply(this.ee, arguments);
         },
         
         off: function(eventName, callback) {
-            this.ee.removeListener.apply(this.ee, arguments);
+            this.ee.off.apply(this.ee, arguments);
         },
         
         getItems: function() {
@@ -398,7 +573,7 @@
                 item.style.width = w + 'px';
                 item.style.height = h + 'px';
             });
-            this.ee.fireEvent('resize', this.options.scope, [w, h]);
+            this.ee.fireEvent('resize', w, h);
         },
         
         onResize: function(e) {
@@ -485,6 +660,10 @@
             me.ct.addEventListener(TOUCH_EVENTS.cancel, me, false);
             delete me.vertical;
             
+            if (me.ee.fireEvent('touchstart', me.active) === false) {
+                return;
+            }
+            
             var point = e.touches ? e.touches[0] : e,
                 context = me.getContext(),
                 height = me.ct.offsetHeight;
@@ -518,10 +697,13 @@
                 absX = Math.abs(offsetX),
                 absY = Math.abs(offsetY);
 
-            if (isUndefined(me.vertical)) {
-                if (offsetY !== 0) {
+            if (!isUndefined(me.vertical)) {
+                if (me.vertical && offsetY !== 0) {
                     e.preventDefault();
                     e.stopPropagation();
+                    if (me.ee.fireEvent('touchmove', me.active, offsetY) === false) {
+                        return;
+                    }
                 }
             } else {
                 if (absY > absX) {
@@ -529,6 +711,9 @@
                     if (offsetY !== 0) {
                         e.preventDefault();
                         e.stopPropagation();
+                        if (me.ee.fireEvent('touchmove', me.active, offsetY) === false) {
+                            return;
+                        }
                     }
                 } else {
                     me.vertical = false;
@@ -561,16 +746,25 @@
             me.ct.removeEventListener(TOUCH_EVENTS.end, me, false);
             me.ct.removeEventListener(TOUCH_EVENTS.cancel, me, false);
             
+            var context = me.getContext(),
+                height = me.ct.offsetHeight,
+                offsetY, absY, transIndex;
+            
             if (!me.touchCoords || me.sliding) {
+                me.setItemHide(context.prev, -height);
+                me.setItemHide(context.next, height);
                 return;
             }
             
-            var context = me.getContext(),
-                height = me.ct.offsetHeight,
-                absY = Math.abs(me.touchCoords.startY - me.touchCoords.stopY),
-                transIndex;
-
-            if (!isNaN(absY) && absY > 0) {
+            offsetY = me.touchCoords.startY - me.touchCoords.stopY;
+            absY = Math.abs(offsetY);
+            
+            if (me.ee.fireEvent('touchend', me.active, offsetY) === false) {
+                me.setItemHide(context.prev, -height);
+                me.setItemHide(context.next, height);
+                me.to(me.active, true, true);
+                delete me.touchCoords;
+            } else if (!isNaN(absY) && absY > 0) {
                 if (absY > height) {
                     absY = height;
                 }
@@ -586,11 +780,9 @@
                     transIndex = context.active;
                 }
                 
-                
-                
                 if (transIndex == context.active && getTranslateY(me.getItem(transIndex)) === 0) {
                     me.setItemHide(context.prev, -height);
-                    me.setItemHide(context.next, -height);
+                    me.setItemHide(context.next, height);
                 } else {
                     me.setItemHide(me.touchCoords.startY > me.touchCoords.stopY ? context.prev : context.next, -height);
                     me.to(transIndex, false, true);
@@ -625,7 +817,7 @@
                     me.slide(fromIndex, toIndex, isSlideDown, silent);
                 };
             
-            if (toIndex > -1 && toIndex <= last && toIndex != active && me.ee.fireEvent('beforeslide', this.options.scope, [toIndex, active]) !== false) {
+            if (toIndex > -1 && toIndex <= last && toIndex != active && me.ee.fireEvent('beforeslide', toIndex, active) !== false) {
                 fromIndex = active;
                 isSlideDown = last > 1 ? ((toIndex < active && active < last) || (toIndex == last - 1 && active == last) || (toIndex == last && active === 0)) : active > toIndex;
                 slideFn(isSlideDown);
@@ -675,7 +867,7 @@
                 me.lastActive = me.active;
                 me.active = toIndex;
                 me.sliding = false;
-                me.ee.fireEvent('slide', me.options.scope, [toIndex, me.lastActive]);
+                me.ee.fireEvent('slide', toIndex, me.lastActive);
             };
 
             if (fromIndex > -1) {

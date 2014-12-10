@@ -18,32 +18,32 @@ TouchBox
 ```html
 <html>
     // ...
+    <body>
+        <div id="touchBoxCt">
+            <div>
+                // 子视图1
+            </div>
+            <div>
+                // 子视图2
+            </div>
+            <div>
+                // 子视图3
+            </div>
+        </div>
+    </body>
 </html>
-<body>
-    <div id="touchBoxCt">
-        <div>
-            // ...
-        </div>
-        <div>
-            // ...
-        </div>
-        <div>
-            // ...
-        </div>
-    </div>
-</body>
 ```
 
-初始CSS，除以下两个样式之外，TouchBox不需要其他任何样式
+初始CSS，除以下两个样式之外，TouchBox不依赖任何其他样式
 
 ```css
-/* 如果不将body的margin设为0，可能会导致视图高宽计算不准确 */
+/* 如果不将body的margin设为0，会导致视图高宽计算不准确 */
 body, div {
     margin: 0;
     padding: 0;
 }
 
-/* 默认将子视图隐藏，防止首屏显示页面闪动，Touchbox会自动切到第一个视图 */
+/* 默认将子视图隐藏，防止首屏显示页面闪动，TouchBox初始化默认切到第一个视图 */
 #touchBoxCt>div{
     display: none;
 }
@@ -56,7 +56,7 @@ new TouchBox('#touchBoxCt', {
 });
 ```
 
-## 配置参数
+## 配置参数 Configs
 
 ### itemSelector : String
 
@@ -76,7 +76,7 @@ new TouchBox('#touchBoxCt', {
 
 ### duration : Number
 
-视图切换动画时间，默认350，单位ms
+视图切换动画时间，默认400，单位ms
 
 ### lockScreen : String
 
@@ -93,7 +93,7 @@ new TouchBox('#touchBoxCt', {
 
 当值为Function时，函数的返回值会被被插入到页面并显示。
 
-### beforeSlide : Function
+### <del>beforeSlide : Function</del> **已弃用**
 
 子视图开始切换时回调函数，如果返回值为false，则终止当次切换操作。
 
@@ -101,14 +101,14 @@ new TouchBox('#touchBoxCt', {
  - toIndex     切换到视图索引
  - active      当前视图索引
 
-### onSlide : Function
+### <del>onSlide : Function</del> **已弃用**
 
 子视图切换结束时回调函数
 
 回调函数参数：
  - active      当前视图索引
  
-### onResize : Function
+### <del>onResize : Function</del> **已弃用**
 
 当TouchBox高宽被重置时调用。
 
@@ -119,3 +119,59 @@ new TouchBox('#touchBoxCt', {
 ### scope: Object
 
 回调函数的作用域
+
+
+## 事件 Event
+
+回调函数事件监听方法：
+```javascript
+boxer.on('beforeslide', function(toIndex, activeIndex) {
+    console.log('beforeslide, ', 'to index:', toIndex, ' current index:', activeIndex);
+});
+```
+
+### touchstart
+
+touchstart事件，返回false则中止本次touch动作。
+
+回调函数参数：
+ - active      当前视图索引
+
+### touchmove
+
+touchmove事件，返回false则中止视图偏移。
+
+回调函数参数：
+ - active      当前视图索引
+ - offsetY     Y轴位置偏移量，大于0表示手指向上移动，小于0表示手指向下移动
+
+### touchend
+
+touchend事件，返回false则中止视图切换，将视图重置为当前视图。
+
+回调函数参数：
+ - active      当前视图索引
+ - offsetY     Y轴位置偏移量，大于0表示手指向上移动，小于0表示手指向下移动
+
+### beforeslide
+
+子视图开始切换时回调函数，如果返回值为false，则终止当次切换操作。
+
+回调函数参数：
+ - toIndex     切换到视图索引
+ - active      当前视图索引
+
+### slide
+
+子视图切换结束时回调函数
+
+回调函数参数：
+ - active      当前视图索引
+ 
+### resize
+
+当TouchBox高宽被重置时调用
+
+回调函数参数：
+ - width       高度
+ - height      宽度

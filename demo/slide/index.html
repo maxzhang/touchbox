@@ -45,12 +45,21 @@ var boxer = new TouchBox('#touchBoxCt', {
     loop: false,
     animation: 'slide'
 });
-boxer.on('beforeslide', function(toIndex) {
-    console.log('beforeslide');
-    //return toIndex !== 2;
+boxer.on('touchstart', function(activeIndex) {
+    console.log('touchstart, ', 'current index:', activeIndex);
 });
-boxer.on('slide', function() {
-    console.log('slide');
+boxer.on('touchmove', function(activeIndex, offsetY) {
+    console.log('touchmove, ', 'current index:', activeIndex, ' offsetY:', offsetY);
+    //return activeIndex < 1 || offsetY > 0;
+});
+boxer.on('touchend', function(activeIndex, offsetY) {
+    console.log('touchend, ', 'current index:', activeIndex, ' offsetY:', offsetY);
+});
+boxer.on('beforeslide', function(toIndex, activeIndex) {
+    console.log('beforeslide, ', 'to index:', toIndex, ' current index:', activeIndex);
+});
+boxer.on('slide', function(activeIndex, oldIndex) {
+    console.log('slide, ', 'current index:', activeIndex, ' old index:', + oldIndex);
 });
 </script>
 </body>
