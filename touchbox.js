@@ -1,5 +1,5 @@
 /*!
- * TouchBox - v1.0.6
+ * TouchBox - v1.0.7
  * 
  * @homepage https://github.com/maxzhang/touchbox
  * @author maxzhang<zhangdaiping@gmail.com> http://maxzhang.github.io
@@ -767,11 +767,11 @@
             offsetY = me.touchCoords.startY - me.touchCoords.stopY;
             absY = Math.abs(offsetY);
             
-            if (me.ee.fireEvent('touchend', me.active, offsetY) === false) {
+            // 在touchend时应当将前、后视图隐藏，否则可能导致一些未知的布局错误
+            if (isNaN(absY) || absY === 0 || me.ee.fireEvent('touchend', me.active, offsetY) === false) {
                 me.setItemHide(context.prev, -height);
                 me.setItemHide(context.next, height);
                 me.to(me.active, true, true);
-                delete me.touchCoords;
             } else if (!isNaN(absY) && absY > 0) {
                 if (absY > height) {
                     absY = height;
@@ -795,8 +795,8 @@
                     me.setItemHide(me.touchCoords.startY > me.touchCoords.stopY ? context.prev : context.next, -height);
                     me.to(transIndex, false, true);
                 }
-                delete me.touchCoords;
             }
+            delete me.touchCoords;
         },
         
         to: function(toIndex, silent, /* private */ isTouch) {
