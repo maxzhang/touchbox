@@ -517,7 +517,7 @@
             this.ee.on.apply(this.ee, arguments);
         },
         
-        off: function(eventName, callback) {
+        off: function() {
             this.ee.off.apply(this.ee, arguments);
         },
         
@@ -1067,6 +1067,7 @@
         }
     };
     
+    TouchBox.EventEmitter = EventEmitter;
     window.TouchBox = TouchBox;
     
 }(window));
