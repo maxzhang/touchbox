@@ -1,5 +1,5 @@
 /*!
- * TouchBox - v1.0.7
+ * TouchBox - v1.0.8
  * 
  * @homepage https://github.com/maxzhang/touchbox
  * @author maxzhang<zhangdaiping@gmail.com> http://maxzhang.github.io
