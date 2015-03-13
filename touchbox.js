@@ -639,7 +639,7 @@
             if (index > -1) {
                 var el = this.getItem(index);
                 //el.style.display = 'none';
-                el.style[vendor.transform] = 'translate3d(-99999px,-99999px,0px)';
+                el.style[vendor.transform] = 'translate3d(0,' + y + 'px,0)';
                 el.style[vendor.transitionDuration] = '0ms';
             }
         },
