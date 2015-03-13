@@ -876,6 +876,15 @@
                 me.active = toIndex;
                 me.sliding = false;
                 me.ee.fireEvent('slide', toIndex, me.lastActive);
+
+                // 提前准备下一视图
+                var context = me.getContext();
+                if (context.prev > -1) {
+                    me.setItemShow('prev', context.prev, -offsetHeight, context);
+                }
+                if (context.next > -1) {
+                    me.setItemShow('next', context.next, offsetHeight, context);
+                }
             };
 
             if (fromIndex > -1) {
