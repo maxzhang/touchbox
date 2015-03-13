@@ -1,13 +1,13 @@
 /*!
- * TouchBox - v1.0.8
- * 
+ * TouchBox - v1.0.9
+ *
  * @homepage https://github.com/maxzhang/touchbox
  * @author maxzhang<zhangdaiping@gmail.com> http://maxzhang.github.io
  */
 (function(window) {
-    
+
     /*--------------- 公共方法 ---------------*/
-    
+
     var document = window.document,
         userAgent = window.navigator.userAgent.toLowerCase(),
         hasTouch = 'ontouchstart' in window,
@@ -15,7 +15,7 @@
         toString = Object.prototype.toString,
         slice = Array.prototype.slice,
         enumerables = ['hasOwnProperty', 'valueOf', 'isPrototypeOf', 'propertyIsEnumerable', 'toLocaleString', 'toString', 'constructor'];
-    
+
     var os = {
         wp: (function() {
             if (userAgent.indexOf('windows phone ') !== -1) {
@@ -49,13 +49,13 @@
             return /\bandroid/;
         }()).test(userAgent)
     };
-    
+
     function prefixPointerEvent(pointerEvent) {
-        return window.MSPointerEvent ? 
+        return window.MSPointerEvent ?
             'MSPointer' + pointerEvent.charAt(9).toUpperCase() + pointerEvent.substr(10):
             pointerEvent;
     }
-    
+
     var TOUCH_EVENTS = (function() {
         return {
             start: hasTouch ? 'touchstart' : (hasPointer ? prefixPointerEvent('pointerdown') : 'mousedown'),
@@ -64,26 +64,26 @@
             cancel: hasTouch ? 'touchcancel' : (hasPointer ? prefixPointerEvent('pointercancel') : 'mousecancel'),
         };
     }());
-    
-    
+
+
     function isFunction(it) {
         return toString.call(it) === '[object Function]';
     }
-    
+
     function isArray(it) {
         return toString.call(it) === '[object Array]';
     }
-    
+
     function isUndefined(it) {
         return typeof it === 'undefined';
     }
-    
+
     function isString(it) {
         return typeof it === 'string';
     }
-    
+
     function noop() {}
-    
+
     function each(c, cb) {
         if (c && cb) {
             if (isArray(c)) {
@@ -101,7 +101,7 @@
             }
         }
     }
-    
+
     function extend(target, obj) {
         if (target && obj && typeof obj === 'object') {
             var i, j, k;
@@ -109,7 +109,7 @@
             for (i in obj) {
                 target[i] = obj[i];
             }
-            
+
             if (enumerables) {
                 for (j = enumerables.length; j--;) {
                     k = enumerables[j];
@@ -121,7 +121,7 @@
         }
         return target;
     }
-    
+
     var vendor = (function() {
         var dummyStyle = document.createElement('div').style,
             propPrefix = (function() {
@@ -184,7 +184,7 @@
             animationDelay: animationDelay
         };
     }());
-    
+
     function getTranslateY(el) {
         var transform = window.getComputedStyle(el)[vendor.transform],
             values;
@@ -195,11 +195,11 @@
         }
         return 0;
     }
-    
+
     function isPortrait() {
         return window.innerHeight > window.innerWidth;
     }
-    
+
     function proxyOrientationChange(fn, scope) {
         return function(e) {
             var args = slice.call(arguments, 0);
@@ -210,7 +210,7 @@
             }
         };
     }
-    
+
     function listenTransition(target, duration, callbackFn) {
         var me = this,
             clear = function() {
@@ -226,43 +226,43 @@
         target.addEventListener(vendor.transitionEndEvent, handler, false);
         target.transitionTimer = setTimeout(handler, duration + 50);
     }
-    
-    
+
+
     var EventEmitter = (function() {
         var toString = Object.prototype.toString,
             eventPropRe = /^(?:scope|delay|buffer|single|stopEvent|preventDefault|stopPropagation|normalized|args|delegate)$/;
-        
+
         function isString(o) {
             return typeof o === 'string';
         }
-        
+
         function isFunction(o) {
             return toString.call(o) === '[object Function]';
         }
-        
+
         function isArray(o) {
             return toString.call(o) === '[object Array]';
         }
-        
+
         function createSingle(e, en, fn, scope){
             return function(){
                 e.removeListener(en, fn, scope);
                 return fn.apply(scope, arguments);
             };
         }
-        
+
         /**
          * @class EventEmitter
          *
          * 事件类，使用方法如下：
-         * 
+         *
          * <code>
          *  // 实例化一个事件类
          *  var ee = new EventEmitter();
-         *  
+         *
          *  // 添加事件类型
          *  ee.addEvents('event1');
-         *  
+         *
          *  // 添加事件监听
          *  ee.addListener('event1', function() {
          *      // 监听回调函数
@@ -275,29 +275,29 @@
         var EventEmitter = function(listeners, defaultScope) {
             this.events = {};
             this.defaultScope = defaultScope || window;
-            
+
             if (listeners) {
                 this.addListener(listeners);
             }
         };
-        
+
         EventEmitter.prototype = {
             constructor: EventEmitter,
-            
+
             /**
              * 声明事件类型，调用方式如下：
-             * 
+             *
              * <code>
              *  ee.addEvents('event1', 'event2');
-             *  
+             *
              *  // 或
-             *  
+             *
              *  ee.addEvents({
              *      'event1': true,
              *      'event2': true
              *  });
              * </code>
-             * 
+             *
              * @param {String} eventName 事件名称
              * @param {String...} eventName1...n (optional)
              */
@@ -305,11 +305,11 @@
                 var args,
                     i,
                     events = this.events;
-        
+
                 if (isString(o)) {
                     args = arguments;
                     i = args.length;
-        
+
                     while (i--) {
                         events[args[i]] = events[args[i]] || [];
                     }
@@ -319,7 +319,7 @@
                     }
                 }
             },
-            
+
             /**
              * 增加事件监听
              * @param {String} eventName 事件名称
@@ -346,13 +346,13 @@
                     }
                     return;
                 }
-                
+
                 var events = this.events;
                 eventName = eventName.toLowerCase();
                 events[eventName] = events[eventName] || [];
                 scope = scope || this.defaultScope;
                 options = options || {};
-                
+
                 events[eventName].push({
                     single: options.single,
                     fireFn: fireFn,
@@ -360,7 +360,7 @@
                     scope: scope
                 });
             },
-            
+
             /**
              * 移除事件监听
              * @param {String} eventName 事件名称
@@ -380,7 +380,7 @@
                     }
                 }
             },
-            
+
             /**
              * 清空某一个事件的所有监听
              * @param {String} eventName 事件名称
@@ -388,7 +388,7 @@
             clearListeners: function(eventName) {
                 this.events[eventName.toLowerCase()] = [];
             },
-            
+
             /**
              * 清空所有事件的监听
              */
@@ -397,17 +397,17 @@
                     this.clearListeners(eventName);
                 }
             },
-            
+
             /**
              * 校验一个事件是否含有监听函数，返回true则表示此事件有监听
              * @param {String} eventName 事件名称
-             * @return {Booolean} 
+             * @return {Booolean}
              */
             hasListener: function(eventName) {
                 var listeners = this.events[eventName.toLowerCase()];
                 return isArray(listeners) && listeners.length > 0;
             },
-            
+
             /**
              * 执行事件，调用事件监听回调函数
              * @param {String} eventName 事件名称
@@ -434,7 +434,7 @@
                     }
                 }
             },
-            
+
             // private
             createListener: function(eventName, fireFn, scope, options) {
                 var h = fireFn;
@@ -445,17 +445,17 @@
                 return h;
             }
         };
-        
+
         EventEmitter.prototype.on = EventEmitter.prototype.addListener;
         EventEmitter.prototype.off = EventEmitter.prototype.removeListener;
-        
+
         return EventEmitter;
     }());
-    
-    
+
+
     /*--------------- 公共方法 end ---------------*/
-    
-    
+
+
     var TouchBox = function(ct, options) {
         var defaultOptions = {
             itemSelector: '',
@@ -470,7 +470,7 @@
             onResize: null,
             scope: this
         };
-        
+
         if (ct && !options) {
             options = ct;
             ct = null;
@@ -483,16 +483,16 @@
         }
         ct.style.overflow = 'hidden';
         this.ct = ct;
-        
+
         this.options = extend(defaultOptions, options);
-        
+
         this.initEvents();
         this.onOrientationChange();
         this.resize();
-        
+
         this.to(this.options.active, true);
     };
-    
+
     TouchBox.prototype = {
         initEvents: function() {
             this.ct.addEventListener(TOUCH_EVENTS.start, this, false);
@@ -500,7 +500,7 @@
             window.addEventListener('orientationchange', this.onOrientationChangeProxy, false);
             window.addEventListener('resize', this.onOrientationChangeProxy, false);
             window.addEventListener('resize', this, false);
-            
+
             this.ee = new EventEmitter(null, this.options.scope);
             if (this.options.beforeSlide) {
                 this.ee.on('beforeslide', this.options.beforeSlide);
@@ -512,28 +512,28 @@
                 this.ee.on('resize', this.options.onResize);
             }
         },
-        
+
         on: function() {
             this.ee.on.apply(this.ee, arguments);
         },
-        
+
         off: function() {
             this.ee.off.apply(this.ee, arguments);
         },
-        
+
         getItems: function() {
             var itemSelector = this.options.itemSelector;
             return slice.call(itemSelector ? this.ct.querySelectorAll(itemSelector) : this.ct.children, 0);
         },
-        
+
         getItem: function(index) {
             return this.getItems()[index];
         },
-        
+
         getActive: function() {
             return this.getItems()[this.active];
         },
-        
+
         getLength: function() {
             return this.getItems().length;
         },
@@ -563,7 +563,7 @@
                 active: index
             };
         },
-        
+
         resize: function(w, h) {
             w = w || window.innerWidth;
             h = h || window.innerHeight;
@@ -575,7 +575,7 @@
             });
             this.ee.fireEvent('resize', w, h);
         },
-        
+
         onResize: function(e) {
             var w = window.innerWidth;
             var h = window.innerHeight;
@@ -585,7 +585,7 @@
                 this.resize(w, h);
             }
         },
-        
+
         onOrientationChange: function(e) {
             var lockScreen = this.options.lockScreen;
             if (lockScreen != 'off') {
@@ -603,7 +603,7 @@
                 this.onResize();
             }
         },
-        
+
         getLockRotateEl: function() {
             if (!this.lockRotateEl) {
                 var rotateBody = this.options.rotateBody;
@@ -619,11 +619,11 @@
             }
             return this.lockRotateEl;
         },
-        
+
         getAnimation: function() {
             return TouchBox.animations[this.options.animation];
         },
-        
+
         setItemShow: function(type, index, y, context) {
             if (index > -1) {
                 var el = this.getItem(index);
@@ -631,19 +631,19 @@
                 animation.touchStart.call(this, type, index, y, context);
                 el.style[vendor.transitionTimingFunction] = 'ease-in-out';
                 el.style[vendor.transitionDuration] = '0ms';
-                el.style.display = 'block';
+                //el.style.display = 'block';
             }
         },
-        
+
         setItemHide: function(index, y) {
             if (index > -1) {
                 var el = this.getItem(index);
-                el.style.display = 'none';
-                el.style[vendor.transform] = 'translate3d(' + y + 'px,0px,0px)';
+                //el.style.display = 'none';
+                el.style[vendor.transform] = 'translate3d(-99999px,-99999px,0px)';
                 el.style[vendor.transitionDuration] = '0ms';
             }
         },
-        
+
         onTouchStart: function(e) {
             var me = this;
             if (me.sliding) {
@@ -651,7 +651,7 @@
                 e.stopPropagation();
                 return;
             }
-            
+
             me.ct.removeEventListener(TOUCH_EVENTS.move, me, false);
             me.ct.removeEventListener(TOUCH_EVENTS.end, me, false);
             me.ct.removeEventListener(TOUCH_EVENTS.cancel, me, false);
@@ -659,11 +659,11 @@
             me.ct.addEventListener(TOUCH_EVENTS.end, me, false);
             me.ct.addEventListener(TOUCH_EVENTS.cancel, me, false);
             delete me.vertical;
-            
+
             if (me.ee.fireEvent('touchstart', me.active) === false) {
                 return;
             }
-            
+
             var point = e.touches ? e.touches[0] : e,
                 context = me.getContext(),
                 height = me.ct.offsetHeight;
@@ -681,13 +681,13 @@
             me.touchCoords.startY = point.pageY;
             me.touchCoords.timeStamp = e.timeStamp;
         },
-        
+
         onTouchMove: function(e) {
             var me = this;
             if (!me.touchCoords || me.sliding) {
                 return;
             }
-            
+
             var point = e.touches ? e.touches[0] : e;
             me.touchCoords.stopX = point.pageX;
             me.touchCoords.stopY = point.pageY;
@@ -706,11 +706,11 @@
                 }
             } else {
                 if (offsetY !== 0) {
-                    /* 
+                    /*
                      * 在移动设备上，当滚动条处于页面顶部时，页面依然可以继续向下滑，
                      * 如果快速连续的重复向下滑动动作，容易导致浏览器默认向下滑动动作与TouchBox向下滑动冲突，
                      * 向上滑动类似，
-                     * 
+                     *
                      * 所以，不伦任何手势都阻止浏览器默认动作(preventDefault)
                      */
                      e.preventDefault();
@@ -733,7 +733,7 @@
             var context = me.getContext(),
                 height = me.ct.offsetHeight,
                 animation;
-                
+
             if (absY < height) {
                 animation = me.getAnimation();
                 if (context.prev > -1) {
@@ -747,26 +747,26 @@
                 }
             }
         },
-        
+
         onTouchEnd: function(e) {
             var me = this;
             me.ct.removeEventListener(TOUCH_EVENTS.move, me, false);
             me.ct.removeEventListener(TOUCH_EVENTS.end, me, false);
             me.ct.removeEventListener(TOUCH_EVENTS.cancel, me, false);
-            
+
             var context = me.getContext(),
                 height = me.ct.offsetHeight,
                 offsetY, absY, transIndex;
-            
+
             if (!me.touchCoords || me.sliding) {
                 me.setItemHide(context.prev, -height);
                 me.setItemHide(context.next, height);
                 return;
             }
-            
+
             offsetY = me.touchCoords.startY - me.touchCoords.stopY;
             absY = Math.abs(offsetY);
-            
+
             // 在touchend时应当将前、后视图隐藏，否则可能导致一些未知的布局错误
             if (isNaN(absY) || absY === 0 || me.ee.fireEvent('touchend', me.active, offsetY) === false) {
                 me.setItemHide(context.prev, -height);
@@ -787,7 +787,7 @@
                 } else {
                     transIndex = context.active;
                 }
-                
+
                 if (transIndex == context.active && getTranslateY(me.getItem(transIndex)) === 0) {
                     me.setItemHide(context.prev, -height);
                     me.setItemHide(context.next, height);
@@ -798,13 +798,13 @@
             }
             delete me.touchCoords;
         },
-        
+
         to: function(toIndex, silent, /* private */ isTouch) {
             var me = this;
             if (me.sliding) {
                 return;
             }
-            
+
             var active = me.active,
                 last = me.getLast(),
                 height = me.ct.offsetHeight,
@@ -824,7 +824,7 @@
                     }
                     me.slide(fromIndex, toIndex, isSlideDown, silent);
                 };
-            
+
             if (toIndex > -1 && toIndex <= last && toIndex != active && me.ee.fireEvent('beforeslide', toIndex, active) !== false) {
                 fromIndex = active;
                 isSlideDown = last > 1 ? ((toIndex < active && active < last) || (toIndex == last - 1 && active == last) || (toIndex == last && active === 0)) : active > toIndex;
@@ -841,7 +841,7 @@
                 slideFn(isSlideDown);
             }
         },
-        
+
         slide: function(fromIndex, toIndex, isSlideDown, silent) {
             var me = this,
                 offsetHeight = me.ct.offsetHeight,
@@ -849,12 +849,12 @@
                 toEl,
                 translateY,
                 baseDuration = me.options.duration,
-                duration, 
+                duration,
                 oms = '0ms',
                 animation = me.getAnimation();
 
             me.sliding = true;
-            
+
             var clearHandler = function(el, fn) {
                 el.removeEventListener(vendor.transitionEndEvent, fn, false);
             };
@@ -862,7 +862,7 @@
                 if (fromEl) {
                     clearHandler(fromEl, fromSlideHandler);
                     fromEl.style.position = 'absolute';
-                    fromEl.style.display = 'none';
+                    //fromEl.style.display = 'none';
                     fromEl.style[vendor.transitionDuration] = oms;
                 }
             };
@@ -884,7 +884,7 @@
             toEl = me.getItem(toIndex);
             translateY = getTranslateY(toEl);
             duration = silent ? 0 : animation.duration ? animation.duration.call(me, fromEl, toEl, fromIndex, toIndex, isSlideDown) : Math.round((Math.abs(translateY) / offsetHeight) * baseDuration);
-            
+
             if (fromEl) {
                 clearHandler(fromEl, fromSlideHandler);
                 fromEl.style[vendor.transitionDuration] = duration + 'ms';
@@ -897,12 +897,12 @@
                     if (fromEl) listenTransition(fromEl, duration, fromSlideHandler);
                     listenTransition(toEl, duration, toSlideHandler);
                 }
-                
+
                 if (fromEl) {
                     animation.touchEnd.call(me, 'active', fromIndex, translateY > 0 ? -offsetHeight : offsetHeight, isSlideDown);
                 }
                 animation.touchEnd.call(me, translateY > 0 ? 'next' : 'prev', toIndex, 0, isSlideDown);
-                
+
                 if (silent) {
                     fromSlideHandler();
                     toSlideHandler();
@@ -915,7 +915,7 @@
                 }
             }, os.android ? 50 : 10);
         },
-        
+
         prev: function() {
             var context = this.getContext();
             if (context.prev > -1) {
@@ -924,7 +924,7 @@
             }
             return false;
         },
-        
+
         next: function() {
             var context = this.getContext();
             if (context.next > -1) {
@@ -970,7 +970,7 @@
             }
         }
     };
-    
+
     TouchBox.animations = {
         'slide': {
             touchStart: function(type, index, y) {
@@ -1066,8 +1066,8 @@
             }
         }
     };
-    
+
     TouchBox.EventEmitter = EventEmitter;
     window.TouchBox = TouchBox;
-    
+
 }(window));
