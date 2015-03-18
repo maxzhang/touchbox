@@ -1,5 +1,5 @@
 /*!
- * TouchBox - v1.0.9
+ * TouchBox - v1.0.10
  *
  * @homepage https://github.com/maxzhang/touchbox
  * @author maxzhang<zhangdaiping@gmail.com> http://maxzhang.github.io
@@ -871,6 +871,7 @@
                 me.resetSlideTimeout = null;
                 clearHandler(toEl, toSlideHandler);
                 toEl.style.position = 'relative';
+                toEl.style.zIndex = '12';
                 toEl.style[vendor.transitionDuration] = oms;
                 me.lastActive = me.active;
                 me.active = toIndex;
@@ -878,7 +879,8 @@
                 me.ee.fireEvent('slide', toIndex, me.lastActive);
 
                 // 提前准备下一视图
-                var context = me.getContext();
+                var context = me.getContext(),
+                    offsetHeight = me.ct.offsetHeight;
                 if (context.prev > -1) {
                     me.setItemShow('prev', context.prev, -offsetHeight, context);
                 }
