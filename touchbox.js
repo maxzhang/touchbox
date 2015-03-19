@@ -460,7 +460,7 @@
         var defaultOptions = {
             itemSelector: '',
             active: 0,
-            loop: false,
+            loop: false, // 循环切换，子视图大于3个，才允许开启
             animation: 'flow',
             duration: 400,
             lockScreen: 'off', // 横竖屏锁定，取值范围：'off'、'landscape'、'portrait'
@@ -485,6 +485,9 @@
         this.ct = ct;
 
         this.options = extend(defaultOptions, options);
+        if (this.getLength() < 3) {
+            this.options.loop = false; // 子视图大于3个，才允许开启
+        }
 
         this.initEvents();
         this.onOrientationChange();
