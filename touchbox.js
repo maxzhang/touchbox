@@ -1,5 +1,5 @@
 /*!
- * TouchBox - v1.0.11
+ * TouchBox - v1.0.12
  *
  * @homepage https://github.com/maxzhang/touchbox
  * @author maxzhang<zhangdaiping@gmail.com> http://maxzhang.github.io
@@ -497,6 +497,7 @@
     };
 
     TouchBox.prototype = {
+        // private
         initEvents: function() {
             this.ct.addEventListener(TOUCH_EVENTS.start, this, false);
             this.onOrientationChangeProxy = proxyOrientationChange(this.onOrientationChange, this);
@@ -518,10 +519,12 @@
 
         on: function() {
             this.ee.on.apply(this.ee, arguments);
+            return this;
         },
 
         off: function() {
             this.ee.off.apply(this.ee, arguments);
+            return this;
         },
 
         getItems: function() {
@@ -577,8 +580,10 @@
                 item.style.height = h + 'px';
             });
             this.ee.fireEvent('resize', w, h);
+            return this;
         },
 
+        // private
         onResize: function(e) {
             var w = window.innerWidth;
             var h = window.innerHeight;
@@ -589,6 +594,7 @@
             }
         },
 
+        // private
         onOrientationChange: function(e) {
             var lockScreen = this.options.lockScreen;
             if (lockScreen != 'off') {
@@ -607,6 +613,7 @@
             }
         },
 
+        // private
         getLockRotateEl: function() {
             if (!this.lockRotateEl) {
                 var rotateBody = this.options.rotateBody;
@@ -623,10 +630,12 @@
             return this.lockRotateEl;
         },
 
+        // private
         getAnimation: function() {
             return TouchBox.animations[this.options.animation];
         },
 
+        // private
         setItemShow: function(type, index, y, context) {
             if (index > -1) {
                 var el = this.getItem(index);
@@ -638,6 +647,7 @@
             }
         },
 
+        // private
         setItemHide: function(index, y) {
             if (index > -1) {
                 var el = this.getItem(index);
@@ -647,6 +657,7 @@
             }
         },
 
+        // private
         onTouchStart: function(e) {
             var me = this;
             if (me.sliding) {
@@ -687,6 +698,7 @@
             me.touchCoords.timeStamp = e.timeStamp;
         },
 
+        // private
         onTouchMove: function(e) {
             var me = this;
             if (!me.touchCoords || me.sliding) {
@@ -753,6 +765,7 @@
             }
         },
 
+        // private
         onTouchEnd: function(e) {
             var me = this;
             me.ct.removeEventListener(TOUCH_EVENTS.move, me, false);
@@ -845,8 +858,11 @@
                 toIndex = active;
                 slideFn(isSlideDown);
             }
+
+            return me;
         },
 
+        // private
         slide: function(fromIndex, toIndex, isSlideDown, silent) {
             var me = this,
                 offsetHeight = me.ct.offsetHeight,
@@ -939,20 +955,19 @@
             var context = this.getContext();
             if (context.prev > -1) {
                 this.to(context.prev);
-                return true;
             }
-            return false;
+            return this;
         },
 
         next: function() {
             var context = this.getContext();
             if (context.next > -1) {
                 this.to(context.next);
-                return true;
             }
-            return false;
+            return this;
         },
 
+        // private
         handleEvent: function(e) {
             switch (e.type) {
                 case TOUCH_EVENTS.start:
