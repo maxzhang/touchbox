@@ -465,9 +465,9 @@
             duration: 400,
             lockScreen: 'off', // 横竖屏锁定，取值范围：'off'、'landscape'、'portrait'
             rotateBody: '',
-            beforeSlide: null, // 已弃用，请使用事件接口 box.on('beforeslide') 代替
-            onSlide: null, // 已弃用，请使用事件接口 box.on('slide') 代替
-            onResize: null, // 已弃用，请使用事件接口 box.on('resize') 代替
+            beforeSlide: null, // 已弃用，请使用事件接口 box.on('beforeslide', function() {}) 代替
+            onSlide: null, // 已弃用，请使用事件接口 box.on('slide', function() {}) 代替
+            onResize: null, // 已弃用，请使用事件接口 box.on('resize', function() {}) 代替
             scope: this
         };
 
