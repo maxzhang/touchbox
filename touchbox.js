@@ -1,5 +1,5 @@
 /*!
- * TouchBox - v1.0.10
+ * TouchBox - v1.0.11
  *
  * @homepage https://github.com/maxzhang/touchbox
  * @author maxzhang<zhangdaiping@gmail.com> http://maxzhang.github.io
@@ -655,6 +655,8 @@
                 return;
             }
 
+            clearTimeout(me.prepareNextViewTimer);
+
             me.ct.removeEventListener(TOUCH_EVENTS.move, me, false);
             me.ct.removeEventListener(TOUCH_EVENTS.end, me, false);
             me.ct.removeEventListener(TOUCH_EVENTS.cancel, me, false);
@@ -881,15 +883,18 @@
                 me.sliding = false;
                 me.ee.fireEvent('slide', toIndex, me.lastActive);
 
-                // 提前准备下一视图
-                var context = me.getContext(),
-                    offsetHeight = me.ct.offsetHeight;
-                if (context.prev > -1) {
-                    me.setItemShow('prev', context.prev, -offsetHeight, context);
-                }
-                if (context.next > -1) {
-                    me.setItemShow('next', context.next, offsetHeight, context);
-                }
+                // 这里设置延迟是因为，防止与下一次touchstart事件冲突
+                me.prepareNextViewTimer = setTimeout(function() {
+                    // 提前准备下一视图
+                    var context = me.getContext(),
+                        offsetHeight = me.ct.offsetHeight;
+                    if (context.prev > -1) {
+                        me.setItemShow('prev', context.prev, -offsetHeight, context);
+                    }
+                    if (context.next > -1) {
+                        me.setItemShow('next', context.next, offsetHeight, context);
+                    }
+                }, 100);
             };
 
             if (fromIndex > -1) {
