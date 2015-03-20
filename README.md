@@ -42,11 +42,6 @@ body, div {
     margin: 0;
     padding: 0;
 }
-
-/* 默认将子视图隐藏，防止首屏显示页面闪动，TouchBox初始化默认切到第一个视图 */
-#touchBoxCt>div{
-    display: none;
-}
 ```
 
 ```javascript
@@ -93,7 +88,7 @@ new TouchBox('#touchBoxCt', {
 
 当值为Function时，函数的返回值会被被插入到页面并显示。
 
-### <del>beforeSlide : Function</del> **已弃用**
+### <del>beforeSlide : Function</del> **已弃用，使用事件接口替代**
 
 子视图开始切换时回调函数，如果返回值为false，则终止当次切换操作。
 
@@ -101,14 +96,14 @@ new TouchBox('#touchBoxCt', {
  - toIndex     切换到视图索引
  - active      当前视图索引
 
-### <del>onSlide : Function</del> **已弃用**
+### <del>onSlide : Function</del> **已弃用，使用事件接口替代**
 
 子视图切换结束时回调函数
 
 回调函数参数：
  - active      当前视图索引
- 
-### <del>onResize : Function</del> **已弃用**
+
+### <del>onResize : Function</del> **已弃用，使用事件接口替代**
 
 当TouchBox高宽被重置时调用。
 
@@ -167,7 +162,7 @@ touchend事件，返回false则中止视图切换，将视图重置为当前视�
 
 回调函数参数：
  - active      当前视图索引
- 
+
 ### resize
 
 当TouchBox高宽被重置时调用
