@@ -1,5 +1,5 @@
 /*!
- * TouchBox - v1.0.12
+ * TouchBox - v1.0.11
  *
  * @homepage https://github.com/maxzhang/touchbox
  * @author maxzhang<zhangdaiping@gmail.com> http://maxzhang.github.io
@@ -883,6 +883,7 @@
                 if (fromEl) {
                     clearHandler(fromEl, fromSlideHandler);
                     fromEl.style.position = 'absolute';
+                    fromEl.style.zIndex = '11';
                     //fromEl.style.display = 'none';
                     fromEl.style[vendor.transitionDuration] = oms;
                 }
@@ -892,6 +893,7 @@
                 me.resetSlideTimeout = null;
                 clearHandler(toEl, toSlideHandler);
                 toEl.style.position = 'relative';
+                fromEl && (fromEl.style.zIndex = '11');
                 toEl.style.zIndex = '12';
                 toEl.style[vendor.transitionDuration] = oms;
                 me.lastActive = me.active;
