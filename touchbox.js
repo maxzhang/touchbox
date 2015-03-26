@@ -787,9 +787,9 @@
 
             // 在touchend时应当将前、后视图隐藏，否则可能导致一些未知的布局错误
             if (isNaN(absY) || absY === 0 || me.ee.fireEvent('touchend', me.active, offsetY) === false) {
-                me.setItemHide(context.prev, -height);
-                me.setItemHide(context.next, height);
-                me.to(me.active, true, true);
+                // me.setItemHide(context.prev, -height);
+                // me.setItemHide(context.next, height);
+                // me.to(me.active, true, true);
             } else if (!isNaN(absY) && absY > 0) {
                 if (absY > height) {
                     absY = height;
@@ -883,7 +883,6 @@
                 if (fromEl) {
                     clearHandler(fromEl, fromSlideHandler);
                     fromEl.style.position = 'absolute';
-                    fromEl.style.zIndex = '11';
                     //fromEl.style.display = 'none';
                     fromEl.style[vendor.transitionDuration] = oms;
                 }
@@ -914,6 +913,22 @@
                     }
                 }, 100);
             };
+
+            // 将预准备的视图移出可视区域外，以免影响正常视图的展示
+            var context = me.getContext();
+            if (me.active == toIndex) {
+                if (isSlideDown) {
+                    me.setItemHide(context.prev, -offsetHeight);
+                } else {
+                    me.setItemHide(context.next, offsetHeight);
+                }
+            } else {
+                if (isSlideDown) {
+                    me.setItemHide(context.next, offsetHeight);
+                } else {
+                    me.setItemHide(context.prev, -offsetHeight);
+                }
+            }
 
             if (fromIndex > -1) {
                 fromEl = me.getItem(fromIndex);
@@ -950,7 +965,7 @@
                         toSlideHandler();
                     }, duration + 400);
                 }
-            }, os.android ? 50 : 10);
+            }, os.android ? 50 : 10); // 加个延迟时间，等待修改的DOM属性生效
         },
 
         prev: function() {
